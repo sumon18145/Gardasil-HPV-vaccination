@@ -3,9 +3,9 @@ library(dplyr)
 library(ggplot2)
 library(tidyverse)
 
-setwd("C:/Users/Nazmul/Desktop/Gardasil_project")
 # Load the Race Weight data set
-gardasil_data <- read.csv("C:/Users/Nazmul/Desktop/Gardasil_project/gardasil - data.csv")
+setwd("C:/Gardasil_project")
+gardasil_data <- read.csv("C:/Gardasil_project/gardasil - data.csv")
 
 ################################################################################
 ################################################################################
@@ -121,7 +121,9 @@ exp(log((237/408)/(232/534))) + 1.96*sqrt((1/237) + (1/408) + (1/232) + (1/534))
 exp(log((237/408)/(232/534))) - 1.96*sqrt((1/237) + (1/408) + (1/232) + (1/534))
 ################################################################################
 ################################################################################
+
 table(gardasil_data$InsuranceType)
+
 # Calculate the percentage of each Completed group for each Race
 gd_insurance <- gardasil_data %>%
   drop_na(Completed) %>%
@@ -140,6 +142,7 @@ gd_insurance$ins_total <- c(274,274,723,723,84,84,330,330)
 gd_insurance$ins_percent <- (gd_insurance$count / gd_insurance$ins_total)*100
 
 write.csv(gd_insurance, "Insurance.csv", row.names = F)
+
 # Create a stacked bar plot with percentage labels
 ggplot(gd_insurance, aes(x = InsuranceType, y = ins_percent, fill = factor(Completed))) +
   geom_bar(stat = "identity") +
@@ -147,23 +150,19 @@ ggplot(gd_insurance, aes(x = InsuranceType, y = ins_percent, fill = factor(Compl
   labs(x = "Insurance", y = "Percentage") +
   geom_text(aes(label = sprintf("%.1f%%", ins_percent)), position = position_stack(vjust = 0.5)) +
   theme_classic() +
-  scale_x_discrete(labels = c("Hospital based
-                          (84)",
-                              "Medical assistance
-                          (274)",
-                              "Military
-                          (330)",
-                              "Private payer
-                          (723)"))
+  scale_x_discrete(labels = c("Hospital based(84)","Medical assistance(274)","Military(330)","Private payer(723)"))
+
 
 gd_insurance2 <- as.matrix(
-  gd_insurance %>% select(InsuranceType, Completed, count) %>%
-    pivot_wider(names_from = InsuranceType, values_from = count) %>%
-    select(`Medical assistance`, `Private payer`, `Hospital based`, `Military`)
+  gd_insurance %>% 
+  select(InsuranceType, Completed, count) %>%
+  pivot_wider(names_from = InsuranceType, values_from = count) %>%
+  select(`Medical assistance`, `Private payer`, `Hospital based`, `Military`)
 )
 # Hypothesis:
 # H0: p1 = p2 = p3 = p4
 # Ha: At least two proportions are different
+
 chisq.test(gd_insurance2, correct = FALSE)
 
 # Comment: The corresponding chi-square test indicates X2 = 31.061 and P = 0.0000,
